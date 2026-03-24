@@ -1,0 +1,106 @@
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+
+const int btnRotate = 2; // Кнопка Поворот
+const int btnMove = 3;   // Кнопка Вправо/Респаун
+
+// Игровое поле 10x20
+#define GRID_W 10
+#define GRID_H 20
+bool world[GRID_W][GRID_H] = {0};
+
+// Фигуры (Тетрамино)
+const uint16_t shapes[7][4] = {
+  {0x4444, 0x0F00, 0x4444, 0x0F00}, // I
+  {0x4460, 0x0E80, 0xC440, 0x2E00}, // L
+  {0x6440, 0x8E00, 0x44C0, 0x0E20}, // J
+  {0x0660, 0x0660, 0x0660, 0x0660}, // O
+  {0x06C0, 0x8C40, 0x06C0, 0x8C40}, // S
+  {0x0E40, 0x4C40, 0x4E00, 0x4640}, // T
+  {0x0C60, 0x4C80, 0x0C60, 0x4C80}  // Z
+};
+
+int curX = 4, curY = 0, curType = 0, curRot = 0;
+long score = 0;
+unsigned long lastDrop = 0;
+
+void setup() {
+  pinMode(btnRotate, INPUT_PULLUP);
+  pinMode(btnMove, INPUT_PULLUP);
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.clearDisplay();
+  randomSeed(analogRead(0));
+  newPiece();
+}
+
+void newPiece() {
+  curX = 4; curY = 0;
+  curType = random(7);
+  curRot = 0;
+  if (checkCollision(curX, curY, curRot)) {
+    memset(world, 0, sizeof(world)); // Game Over - очистка
+    score = 0;
+  }
+}
+
+bool checkCollision(int nx, int ny, int nr) {
+  for (int i = 0; i < 16; i++) {
+    if (shapes[curType][nr] & (1 << (15 - i))) {
+      int px = nx + (i % 4);
+      int py = ny + (i / 4);
+      if (px < 0 || px >= GRID_W || py >= GRID_H || (py >= 0 && world[px][py])) return true;
+    }
+  }
+  return false;
+}
+
+void lockPiece() {
+  for (int i = 0; i < 16; i++) {
+    if (shapes[curType][curRot] & (1 << (15 - i))) {
+      world[curX + (i % 4)][curY + (i / 4)] = 1;
+    }
+  }
+  newPiece();
+}
+
+void draw() {
+  display.clearDisplay();
+  display.drawRect(40, 0, 32, 64, WHITE); // Стакан
+  for (int x = 0; x < GRID_W; x++)
+    for (int y = 0; y < GRID_H; y++)
+      if (world[x][y]) display.fillRect(42 + x*3, y*3, 2, 2, WHITE);
+  
+  for (int i = 0; i < 16; i++)
+    if (shapes[curType][curRot] & (1 << (15 - i)))
+      display.fillRect(42 + (curX + i%4)*3, (curY + i/4)*3, 2, 2, WHITE);
+
+  display.setCursor(0,0); display.print("Score:"); display.print(score);
+  display.display();
+}
+
+void loop() {
+  if (digitalRead(btnRotate) == LOW) {
+    int nextRot = (curRot + 1) % 4;
+    if (!checkCollision(curX, curY, nextRot)) curRot = nextRot;
+    delay(150);
+  }
+
+  if (digitalRead(btnMove) == LOW) {
+    int nextX = curX + 1;
+    if (nextX >= GRID_W - 2) nextX = 0; // Перескок влево
+    if (!checkCollision(nextX, curY, curRot)) curX = nextX;
+    delay(150);
+  }
+
+  if (millis() - lastDrop > 400) {
+    if (!checkCollision(curX, curY + 1, curRot)) curY++;
+    else lockPiece();
+    lastDrop = millis();
+  }
+  draw();
+}
