@@ -1,7 +1,7 @@
 # Tetris-On-Arduino-Uno
 I imported Tetris for Arduino, its working. Just add OLED screen, 2 buttons, compile code and play.
 
-# ❓ What need to play?
+# ❔ What need to play?
 | Components | PIN on Arduino Uno | Description |
 | :--- | :--- | :--- |
 | Arduino Uno R3 | Nothing | The heart of the game |
@@ -10,7 +10,7 @@ I imported Tetris for Arduino, its working. Just add OLED screen, 2 buttons, com
 | Button 1 | D2, GND | Rotation of figures |
 | Button 2 | D3, GND | Move Right |
 
-# Code for Tetris
+# 🖊 Code for Tetris
 https://github.com/L1ghtn1ngXD/Tetris-On-Arduino-Uno/blob/main/code.txt
 
 # 🗺 Wire scheme
