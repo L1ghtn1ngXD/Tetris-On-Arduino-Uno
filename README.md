@@ -15,4 +15,4 @@ https://github.com/L1ghtn1ngXD/Tetris-On-Arduino-Uno/blob/main/code.txt
 
 # 🗺 Wire scheme
 Made in Wokwi
-<img width="1090" height="790" alt="изображение" src="https://github.com/user-attachments/assets/31081d05-ef7b-4d82-91c5-17fc4954df6c" />
+<img width="1090" height="790" alt="image" src="https://github.com/L1ghtn1ngXD/Tetris-On-Arduino-Uno/blob/main/image.png?raw=true" />
